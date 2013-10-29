@@ -1,0 +1,23 @@
+*.class
+*.project
+*.settings/
+*.classpath
+**target/
+
+**__pycache__/
+
+*.metadata/*
+
+# Package Files #
+*.war
+*.ear
+
+.waf-*
+.lock-*
+*/target/*
+*~
+*.project
+*bin/*
+*.DS_Store
+*.nja
+*.log
