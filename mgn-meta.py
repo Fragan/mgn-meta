@@ -166,22 +166,22 @@ class Presentation(MTk.Frame):
         self.controller.execute()
         Mb.showinfo("", "Treatment completed")
 
-    def update(self, abstraction):
+    def update(self, subject):
         self.logger.debug("Update the presentation")
 
         # update path's textfield
         self.path_txt_line.delete(0, 65000)
-        self.path_txt_line.insert(0, abstraction.getPath())
+        self.path_txt_line.insert(0, subject.getPath())
 
         # update gallery's textfields
         self.gtitle_fld.delete(0, 65000)
-        self.gtitle_fld.insert(0, abstraction.getGalleryTitle())
+        self.gtitle_fld.insert(0, subject.getGalleryTitle())
 
         self.gcomment_fld.delete(0, 65000)
-        self.gcomment_fld.insert(0, abstraction.getGalleryComment())
+        self.gcomment_fld.insert(0, subject.getGalleryComment())
 
         # update images's textfields and label
-        imageInfo = abstraction.getImageInfo()
+        imageInfo = subject.getImageInfo()
         self.logger.debug((imageInfo.toString()))
         self.img_lbl.configure(text=imageInfo.getLeft())
         self.ititle_fld.delete(0, 65000)
