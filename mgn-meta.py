@@ -57,7 +57,7 @@ class Presentation(MTk.Frame):
 
         ##########
         self.browse_pnl = MTk.Frame(self)
-        self.browse_pnl.pack(anchor="n")
+        self.browse_pnl.pack(anchor="nw")
 
         self.edit_pnl = MTk.Frame(self)
         self.edit_pnl.pack(anchor="s")
@@ -72,11 +72,11 @@ class Presentation(MTk.Frame):
         self.path_lbl = MTk.Label(self.browse_pnl, text="Gallery\'s path:", anchor="w", fg="black")
         self.path_lbl.grid(row=0, column=0, columnspan=2, padx=4, sticky='EW')
 
-        self.path_txt_line = MTk.Entry(self.browse_pnl, textvariable=self.path, width=90)
-        self.path_txt_line.grid(column=0, row=1, sticky='EW')
+        self.path_txt_line = MTk.Entry(self.browse_pnl, textvariable=self.path, width=150)
+        self.path_txt_line.grid(column=0, row=1, sticky='EW', padx=4)
 
         self.browse_btn = MTk.Button(self.browse_pnl, text="Browse", command=self.browse)
-        self.browse_btn.grid(row=1, column=1, sticky='EW')
+        self.browse_btn.grid(row=1, column=1, sticky='EW', padx=4)
 
         ##########
         self.img_lbl = MTk.Label(self.img_pnl, text="none")
@@ -110,7 +110,7 @@ class Presentation(MTk.Frame):
         self.gcomment_lbl = MTk.Label(self.tools_pnl, text="Gallery\'s comment:", anchor="w", fg="black")
         self.gcomment_lbl.pack()
 
-        self.gcomment_fld = MTk.Entry(self.tools_pnl, width=40)
+        self.gcomment_fld = MTk.Text(self.tools_pnl, width=46, height=5)
         self.gcomment_fld.pack()
 
         self.gvalidate_btn = MTk.Button(self.tools_pnl, text="Validate", command=self.validateGalleryInfo)
@@ -130,7 +130,7 @@ class Presentation(MTk.Frame):
         self.icomment_lbl = MTk.Label(self.img_info_pnl, text="Image\'s comment:", anchor="w", fg="black")
         self.icomment_lbl.pack()
 
-        self.icomment_fld = MTk.Entry(self.img_info_pnl, width=40)
+        self.icomment_fld = MTk.Text(self.img_info_pnl, width=46, height=5)
         self.icomment_fld.pack()
 
         ##
