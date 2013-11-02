@@ -27,8 +27,8 @@ from logging.handlers import RotatingFileHandler
 import re
 
 LOG_LEVEL = logging.DEBUG
-formatter = logging.Formatter('%(asctime)s - %(levelname)s -  %(name)s :: %(message)s')
-file_handler = RotatingFileHandler('mgn-meta.log', 'a', 10485760, 1)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s -  %(name)s -> %(message)s')
+file_handler = RotatingFileHandler('mgn-meta.log', 'a', 1048576, 1)
 file_handler.setLevel(LOG_LEVEL)
 file_handler.setFormatter(formatter)
 
@@ -46,7 +46,7 @@ class Presentation(MTk.Frame):
         self.controller = controller
 
         self.frame = MTk.Tk()
-        MTk.Frame.__init__(self, self.frame, width=768, height=576, **kwargs)
+        MTk.Frame.__init__(self, self.frame, width=1280, height=720, **kwargs)
         self.path = MTk.StringVar()
 
         self.initView()
@@ -57,30 +57,33 @@ class Presentation(MTk.Frame):
 
         ##########
         self.browse_pnl = MTk.Frame(self)
-        self.browse_pnl.pack(anchor="nw")
+        self.browse_pnl.pack(anchor=MTk.N, expand=MTk.YES, fill=MTk.X)
+
+        self.separator1 = MTk.Frame(self, height=2, bd=1, relief=MTk.SUNKEN)
+        self.separator1.pack(fill=MTk.X, padx=5, pady=5)
 
         self.edit_pnl = MTk.Frame(self)
-        self.edit_pnl.pack(anchor="s")
+        self.edit_pnl.pack(anchor=MTk.S, expand=MTk.YES, fill=MTk.X)
 
         self.tools_pnl = MTk.Frame(self.edit_pnl)
-        self.tools_pnl.grid(row=0, column=0)
+        self.tools_pnl.pack(side=MTk.LEFT, fill=MTk.Y, padx=4)
 
         self.img_pnl = MTk.Frame(self.edit_pnl)
-        self.img_pnl.grid(row=0, column=1)
+        self.img_pnl.pack(side=MTk.LEFT, fill=MTk.BOTH)
 
         ##########
-        self.path_lbl = MTk.Label(self.browse_pnl, text="Gallery\'s path:", anchor="w", fg="black")
-        self.path_lbl.grid(row=0, column=0, columnspan=2, padx=4, sticky='EW')
+        self.path_lbl = MTk.Label(self.browse_pnl, text="Gallery\'s path:", anchor=MTk.W, fg="black")
+        self.path_lbl.pack(anchor=MTk.NW, padx=4)
 
-        self.path_txt_line = MTk.Entry(self.browse_pnl, textvariable=self.path, width=150)
-        self.path_txt_line.grid(column=0, row=1, sticky='EW', padx=4)
+        self.path_txt_line = MTk.Entry(self.browse_pnl, textvariable=self.path)
+        self.path_txt_line.pack(padx=4, side=MTk.LEFT, expand=MTk.YES, fill=MTk.X)
 
         self.browse_btn = MTk.Button(self.browse_pnl, text="Browse", command=self.browse)
-        self.browse_btn.grid(row=1, column=1, sticky='EW', padx=4)
+        self.browse_btn.pack(padx=4, side=MTk.LEFT)
 
         ##########
         self.img_lbl = MTk.Label(self.img_pnl, text="none")
-        self.img_lbl.pack()
+        self.img_lbl.pack(expand=MTk.YES)
 
         self.canvas = MTk.Canvas(self.img_pnl, bg="grey")
         self.canvas.config(width=917, height=588)
@@ -101,51 +104,54 @@ class Presentation(MTk.Frame):
         self.canvas.pack(side=MTk.LEFT, expand=MTk.YES, fill=MTk.BOTH)
 
         ##########
-        self.gtitle_lbl = MTk.Label(self.tools_pnl, text="Gallery\'s title:", anchor="w", fg="black")
-        self.gtitle_lbl.pack()
+        self.gtitle_lbl = MTk.Label(self.tools_pnl, text="Gallery\'s title:", anchor=MTk.W, fg="black")
+        self.gtitle_lbl.pack(anchor=MTk.W)
 
         self.gtitle_fld = MTk.Entry(self.tools_pnl, width=40)
-        self.gtitle_fld.pack()
+        self.gtitle_fld.pack(anchor=MTk.W)
 
-        self.gcomment_lbl = MTk.Label(self.tools_pnl, text="Gallery\'s comment:", anchor="w", fg="black")
-        self.gcomment_lbl.pack()
+        self.gcomment_lbl = MTk.Label(self.tools_pnl, text="Gallery\'s comment:", anchor=MTk.W, fg="black")
+        self.gcomment_lbl.pack(anchor=MTk.W)
 
         self.gcomment_fld = MTk.Text(self.tools_pnl, width=46, height=5)
-        self.gcomment_fld.pack()
+        self.gcomment_fld.pack(anchor=MTk.W)
 
         self.gvalidate_btn = MTk.Button(self.tools_pnl, text="Validate", command=self.validateGalleryInfo)
-        self.gvalidate_btn.pack()
+        self.gvalidate_btn.pack(anchor=MTk.E)
 
         #####
         self.img_info_pnl = MTk.Frame(self.tools_pnl)
-        self.img_info_pnl.pack(pady=10)
+        self.img_info_pnl.pack(pady=4)
 
         ##
-        self.ititle_lbl = MTk.Label(self.img_info_pnl, text="Image\'s title:", anchor="w", fg="black")
-        self.ititle_lbl.pack()
+        self.ititle_lbl = MTk.Label(self.img_info_pnl, text="Image\'s title:", anchor=MTk.W, fg="black")
+        self.ititle_lbl.pack(anchor=MTk.W)
 
         self.ititle_fld = MTk.Entry(self.img_info_pnl, width=40)
-        self.ititle_fld.pack()
+        self.ititle_fld.pack(anchor=MTk.W)
 
-        self.icomment_lbl = MTk.Label(self.img_info_pnl, text="Image\'s comment:", anchor="w", fg="black")
-        self.icomment_lbl.pack()
+        self.icomment_lbl = MTk.Label(self.img_info_pnl, text="Image\'s comment:", anchor=MTk.W, fg="black")
+        self.icomment_lbl.pack(anchor=MTk.W)
 
         self.icomment_fld = MTk.Text(self.img_info_pnl, width=46, height=5)
-        self.icomment_fld.pack()
+        self.icomment_fld.pack(anchor=MTk.W)
 
         ##
         self.img_btn_pnl = MTk.Frame(self.img_info_pnl)
-        self.img_btn_pnl.pack()
+        self.img_btn_pnl.pack(anchor=MTk.E)
 
         self.nxt_img_btn = MTk.Button(self.img_btn_pnl, text="Previous", command=self.controller.previous)
-        self.nxt_img_btn.grid(row=0, column=0, sticky='EW')
+        self.nxt_img_btn.pack(side=MTk.LEFT)
 
         self.nxt_img_btn = MTk.Button(self.img_btn_pnl, text="Next", command=self.controller.next)
-        self.nxt_img_btn.grid(row=0, column=1, sticky='EW')
+        self.nxt_img_btn.pack(side=MTk.LEFT)
 
         ##
+        self.separator2 = MTk.Frame(self.tools_pnl, height=2, bd=1, relief=MTk.SUNKEN)
+        self.separator2.pack(fill=MTk.X, padx=5, pady=5)
+
         self.generate_btn = MTk.Button(self.tools_pnl, text="Generate file", command=self.execute)
-        self.generate_btn.pack(anchor="n")
+        self.generate_btn.pack(anchor=MTk.N)
 
 
     def mainloop(self):
@@ -170,24 +176,24 @@ class Presentation(MTk.Frame):
         self.logger.debug("Update the presentation")
 
         # update path's textfield
-        self.path_txt_line.delete(0, 65000)
+        self.path_txt_line.delete(0, MTk.END)
         self.path_txt_line.insert(0, subject.getPath())
 
         # update gallery's textfields
-        self.gtitle_fld.delete(0, 65000)
+        self.gtitle_fld.delete(0, MTk.END)
         self.gtitle_fld.insert(0, subject.getGalleryTitle())
 
-        self.gcomment_fld.delete(0, 65000)
-        self.gcomment_fld.insert(0, subject.getGalleryComment())
+        self.gcomment_fld.delete(0.0, MTk.END)
+        self.gcomment_fld.insert(0.0, subject.getGalleryComment())
 
         # update images's textfields and label
         imageInfo = subject.getImageInfo()
         self.logger.debug((imageInfo.toString()))
         self.img_lbl.configure(text=imageInfo.getLeft())
-        self.ititle_fld.delete(0, 65000)
+        self.ititle_fld.delete(0, MTk.END)
         self.ititle_fld.insert(0, imageInfo.getMidle())
-        self.icomment_fld.delete(0, 65000)
-        self.icomment_fld.insert(0, imageInfo.getRight())
+        self.icomment_fld.delete(0.0, MTk.END)
+        self.icomment_fld.insert(0.0, imageInfo.getRight())
 
         # update canvas
         ifile = Image.open(os.path.join(self.path, imageInfo.getLeft()))
@@ -200,7 +206,7 @@ class Presentation(MTk.Frame):
         return self.ititle_fld.get()
 
     def getImageComment(self):
-        return self.icomment_fld.get()
+        return self.icomment_fld.get(0.0)
 
 class Controller():
 
