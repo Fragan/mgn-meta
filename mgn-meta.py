@@ -21,7 +21,12 @@ import tkinter.messagebox as Mb
 from StringBuilder import StringBuilder
 from Triple import Triple
 import codecs
-from PIL import Image, ImageTk
+try:
+    # Try to support some OS failure
+    from PIL import Image, ImageTk
+except:
+    import Image, ImageTk
+
 import logging
 from logging.handlers import RotatingFileHandler
 import re
@@ -49,9 +54,9 @@ class Presentation(MTk.Frame):
         MTk.Frame.__init__(self, self.frame, width=1280, height=720, **kwargs)
         self.path = MTk.StringVar()
 
-        self.initView()
+        self.__initView__()
 
-    def initView(self):
+    def __initView__(self):
         self.frame.wm_title("MiniGal Nano++ metadata generator")
         self.pack()
 
