@@ -1,18 +1,23 @@
 #!/usr/bin/python3
 
 import sys
-from cgitb import text
-from distutils.cmd import Command
-from symbol import try_stmt
-from test import list_tests
-from tkinter import Canvas
-from cgi import log
 print((sys.version))
 
 if sys.version_info[0] < 3:
     print("This script requires Python version 3.x")
     sys.exit(1)
 
+if sys.platform == 'linux':
+    print("Found Linux distribution -")
+elif sys.platform == 'darwin':
+    print("Found Mac OSX distribution -")
+
+from PIL import Image, ImageTk
+
+from cgitb import text
+from distutils.cmd import Command
+from tkinter import Canvas
+from cgi import log
 import glob
 import os
 import tkinter as MTk
@@ -21,12 +26,6 @@ import tkinter.messagebox as Mb
 from StringBuilder import StringBuilder
 from Triple import Triple
 import codecs
-try:
-    # Try to support some OS failure
-    from PIL import Image, ImageTk
-except:
-    import Image, ImageTk
-
 import logging
 from logging.handlers import RotatingFileHandler
 import re
