@@ -11,6 +11,8 @@ if sys.platform == 'linux':
     print("Found Linux distribution -")
 elif sys.platform == 'darwin':
     print("Found Mac OSX distribution -")
+    sys.path.append("/opt/local/Library/Frameworks/Python.framework/Versions/3.3/lib/python3.3/site-packages")
+    sys.path.append("/opt/local/Library/Frameworks/Python.framework/Versions/3.3/lib/python3.3/site-packages/PIL")
 
 from PIL import Image, ImageTk
 
