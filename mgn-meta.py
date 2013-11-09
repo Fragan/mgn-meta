@@ -53,6 +53,7 @@ class Presentation(MTk.Frame):
 
         self.frame = MTk.Tk()
         MTk.Frame.__init__(self, self.frame, width=1280, height=720, **kwargs)
+        self.frame.option_readfile("look-and-feel-options.ini")
         self.path = MTk.StringVar()
 
         self.__initView__()
