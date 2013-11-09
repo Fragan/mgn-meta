@@ -92,7 +92,7 @@ class Presentation(MTk.Frame):
         self.img_lbl = MTk.Label(self.img_pnl, text="none")
         self.img_lbl.pack(expand=MTk.YES)
 
-        self.canvas = MTk.Canvas(self.img_pnl, bg="grey", borderwidth=2)
+        self.canvas = MTk.Canvas(self.img_pnl)
         self.canvas.config(width=917, height=588)
 
         ##
@@ -114,13 +114,13 @@ class Presentation(MTk.Frame):
         self.gtitle_lbl = MTk.Label(self.tools_pnl, text="Gallery\'s title:", anchor=MTk.W, fg="black")
         self.gtitle_lbl.pack(anchor=MTk.W)
 
-        self.gtitle_fld = MTk.Entry(self.tools_pnl, width=40, borderwidth=2)
+        self.gtitle_fld = MTk.Entry(self.tools_pnl, width=40)
         self.gtitle_fld.pack(anchor=MTk.W)
 
         self.gcomment_lbl = MTk.Label(self.tools_pnl, text="Gallery\'s comment:", anchor=MTk.W, fg="black")
         self.gcomment_lbl.pack(anchor=MTk.W)
 
-        self.gcomment_fld = MTk.Text(self.tools_pnl, width=46, height=5, borderwidth=2)
+        self.gcomment_fld = MTk.Text(self.tools_pnl, width=40, height=5)
         self.gcomment_fld.pack(anchor=MTk.W)
 
         self.gvalidate_btn = MTk.Button(self.tools_pnl, text="Validate", command=self.validateGalleryInfo)
@@ -138,13 +138,13 @@ class Presentation(MTk.Frame):
         self.ititle_lbl = MTk.Label(self.img_info_pnl, text="Image\'s title:", anchor=MTk.W, fg="black")
         self.ititle_lbl.pack(anchor=MTk.W)
 
-        self.ititle_fld = MTk.Entry(self.img_info_pnl, width=40, borderwidth=2)
+        self.ititle_fld = MTk.Entry(self.img_info_pnl, width=40)
         self.ititle_fld.pack(anchor=MTk.W)
 
         self.icomment_lbl = MTk.Label(self.img_info_pnl, text="Image\'s comment:", anchor=MTk.W, fg="black")
         self.icomment_lbl.pack(anchor=MTk.W)
 
-        self.icomment_fld = MTk.Text(self.img_info_pnl, width=46, height=5, borderwidth=2)
+        self.icomment_fld = MTk.Text(self.img_info_pnl, width=40, height=5)
         self.icomment_fld.pack(anchor=MTk.W)
 
         ##
