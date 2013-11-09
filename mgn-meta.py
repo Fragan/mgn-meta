@@ -56,9 +56,10 @@ class Presentation(MTk.Frame):
         self.frame.option_readfile("look-and-feel-options.ini")
         self.path = MTk.StringVar()
 
-        self.__initView__()
+        self._initView()
+        self._bindKey()
 
-    def __initView__(self):
+    def _initView(self):
         self.frame.wm_title("MiniGal Nano++ metadata generator")
         self.pack()
 
@@ -164,9 +165,15 @@ class Presentation(MTk.Frame):
         self.generate_btn = MTk.Button(self.tools_pnl, text="Generate file", command=self.execute)
         self.generate_btn.pack(anchor=MTk.N)
 
+    def _bindKey(self):
+        self.frame.bind('<Control-Q>', self._quit)
+        self.frame.bind('<Control-q>', self._quit)
 
     def mainloop(self):
         self.frame.mainloop()
+#         self.frame.destroy()
+
+    def _quit(self, event=MTk.NONE):
         self.frame.destroy()
 
     def browse(self):
