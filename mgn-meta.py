@@ -86,7 +86,7 @@ class Presentation(MTk.Frame):
         self.path_txt_line = MTk.Entry(self.browse_pnl, textvariable=self.path)
         self.path_txt_line.pack(padx=4, side=MTk.LEFT, expand=MTk.YES, fill=MTk.X)
 
-        self.browse_btn = MTk.Button(self.browse_pnl, text="Browse", command=self.browse)
+        self.browse_btn = MTk.Button(self.browse_pnl, text="Browse", command=self._browse)
         self.browse_btn.pack(padx=4, side=MTk.LEFT)
 
         ##########
@@ -124,7 +124,7 @@ class Presentation(MTk.Frame):
         self.gcomment_fld = MTk.Text(self.tools_pnl, width=40, height=5)
         self.gcomment_fld.pack(anchor=MTk.W)
 
-        self.gvalidate_btn = MTk.Button(self.tools_pnl, text="Validate", command=self.validateGalleryInfo)
+        self.gvalidate_btn = MTk.Button(self.tools_pnl, text="Validate", command=self._validateGalleryInfo)
         self.gvalidate_btn.pack(anchor=MTk.E)
 
         ##
@@ -162,12 +162,15 @@ class Presentation(MTk.Frame):
         self.separator3 = MTk.Frame(self.tools_pnl, height=2, bd=1, relief=MTk.SUNKEN)
         self.separator3.pack(fill=MTk.X, padx=5, pady=5)
 
-        self.generate_btn = MTk.Button(self.tools_pnl, text="Generate file", command=self.execute)
+        self.generate_btn = MTk.Button(self.tools_pnl, text="Generate file", command=self._execute)
         self.generate_btn.pack(anchor=MTk.N)
 
     def _bindKey(self):
         self.frame.bind('<Control-Q>', self._quit)
         self.frame.bind('<Control-q>', self._quit)
+
+        self.frame.bind('<Control-O>', self._browse)
+        self.frame.bind('<Control-o>', self._browse)
 
     def mainloop(self):
         self.frame.mainloop()
@@ -176,17 +179,17 @@ class Presentation(MTk.Frame):
     def _quit(self, event=MTk.NONE):
         self.frame.destroy()
 
-    def browse(self):
+    def _browse(self, event=MTk.NONE):
         self.path = Fd.askdirectory(title="Select a directory")
 
         # set the new path
         self.controller.clear()
         self.controller.setPath(self.path)
 
-    def validateGalleryInfo(self):
+    def _validateGalleryInfo(self):
         self.controller.setGalleryInfo(self.gtitle_fld.get(), self.gcomment_fld.get())
 
-    def execute(self):
+    def _execute(self):
         self.controller.execute()
         Mb.showinfo("", "Treatment completed")
 
