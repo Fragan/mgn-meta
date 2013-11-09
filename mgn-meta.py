@@ -7,12 +7,12 @@ if sys.version_info[0] < 3:
     print("This script requires Python version 3.x")
     sys.exit(1)
 
-if sys.platform == 'linux':
-    print("Found Linux distribution -")
-elif sys.platform == 'darwin':
-    print("Found Mac OSX distribution -")
-    # Add sys path for PIL
-    sys.path.append("/opt/local/Library/Frameworks/Python.framework/Versions/3.3/lib/python3.3/site-packages")
+# if sys.platform == 'linux':
+#     print("Found Linux distribution -")
+# elif sys.platform == 'darwin':
+#     print("Found Mac OSX distribution -")
+#     # Add sys path for PIL
+#     sys.path.append("/opt/local/Library/Frameworks/Python.framework/Versions/3.3/lib/python3.3/site-packages")
 
 from PIL import Image, ImageTk
 

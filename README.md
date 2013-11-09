@@ -1,5 +1,4 @@
-MGN Metadata
-============
+#MGN Metadata
 
 This is a tool for editing the metadata.txt file from the [MiniGal Nano++](https://github.com/Fragan/Minigal-Nano-PP) galleries.
 
@@ -7,8 +6,9 @@ This is a tool for editing the metadata.txt file from the [MiniGal Nano++](https
 * Licence Apache v2
 
 
-Installation
-============
+#Installation
 
 * Install these files in $HOME/mgn-meta
 * Install PIL or Pillow library for mgn-meta's dependencies
+  * Archlinux : `yaourt -S python-pillow`
+  * OSX (with MacPorts) : `sudo port install py33-Pillow`
