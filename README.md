@@ -11,4 +11,4 @@ This is a tool for editing the metadata.txt file from the [MiniGal Nano++](https
 * Install these files in $HOME/mgn-meta
 * Install PIL or Pillow library for mgn-meta's dependencies
   * Archlinux : `yaourt -S python-pillow`
-  * OSX (with MacPorts) : `sudo port install py33-Pillow`
+  * OSX (with MacPorts) : `sudo port install py33-Pillow` (if you use python 3.3)

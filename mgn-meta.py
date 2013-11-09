@@ -91,7 +91,7 @@ class Presentation(MTk.Frame):
         self.img_lbl = MTk.Label(self.img_pnl, text="none")
         self.img_lbl.pack(expand=MTk.YES)
 
-        self.canvas = MTk.Canvas(self.img_pnl, bg="grey")
+        self.canvas = MTk.Canvas(self.img_pnl, bg="grey", borderwidth=2)
         self.canvas.config(width=917, height=588)
 
         ##
@@ -113,17 +113,21 @@ class Presentation(MTk.Frame):
         self.gtitle_lbl = MTk.Label(self.tools_pnl, text="Gallery\'s title:", anchor=MTk.W, fg="black")
         self.gtitle_lbl.pack(anchor=MTk.W)
 
-        self.gtitle_fld = MTk.Entry(self.tools_pnl, width=40)
+        self.gtitle_fld = MTk.Entry(self.tools_pnl, width=40, borderwidth=2)
         self.gtitle_fld.pack(anchor=MTk.W)
 
         self.gcomment_lbl = MTk.Label(self.tools_pnl, text="Gallery\'s comment:", anchor=MTk.W, fg="black")
         self.gcomment_lbl.pack(anchor=MTk.W)
 
-        self.gcomment_fld = MTk.Text(self.tools_pnl, width=46, height=5)
+        self.gcomment_fld = MTk.Text(self.tools_pnl, width=46, height=5, borderwidth=2)
         self.gcomment_fld.pack(anchor=MTk.W)
 
         self.gvalidate_btn = MTk.Button(self.tools_pnl, text="Validate", command=self.validateGalleryInfo)
         self.gvalidate_btn.pack(anchor=MTk.E)
+
+        ##
+        self.separator2 = MTk.Frame(self.tools_pnl, height=2, bd=1, relief=MTk.SUNKEN)
+        self.separator2.pack(fill=MTk.X, padx=5, pady=5)
 
         #####
         self.img_info_pnl = MTk.Frame(self.tools_pnl)
@@ -133,13 +137,13 @@ class Presentation(MTk.Frame):
         self.ititle_lbl = MTk.Label(self.img_info_pnl, text="Image\'s title:", anchor=MTk.W, fg="black")
         self.ititle_lbl.pack(anchor=MTk.W)
 
-        self.ititle_fld = MTk.Entry(self.img_info_pnl, width=40)
+        self.ititle_fld = MTk.Entry(self.img_info_pnl, width=40, borderwidth=2)
         self.ititle_fld.pack(anchor=MTk.W)
 
         self.icomment_lbl = MTk.Label(self.img_info_pnl, text="Image\'s comment:", anchor=MTk.W, fg="black")
         self.icomment_lbl.pack(anchor=MTk.W)
 
-        self.icomment_fld = MTk.Text(self.img_info_pnl, width=46, height=5)
+        self.icomment_fld = MTk.Text(self.img_info_pnl, width=46, height=5, borderwidth=2)
         self.icomment_fld.pack(anchor=MTk.W)
 
         ##
@@ -153,8 +157,8 @@ class Presentation(MTk.Frame):
         self.nxt_img_btn.pack(side=MTk.LEFT)
 
         ##
-        self.separator2 = MTk.Frame(self.tools_pnl, height=2, bd=1, relief=MTk.SUNKEN)
-        self.separator2.pack(fill=MTk.X, padx=5, pady=5)
+        self.separator3 = MTk.Frame(self.tools_pnl, height=2, bd=1, relief=MTk.SUNKEN)
+        self.separator3.pack(fill=MTk.X, padx=5, pady=5)
 
         self.generate_btn = MTk.Button(self.tools_pnl, text="Generate file", command=self.execute)
         self.generate_btn.pack(anchor=MTk.N)
