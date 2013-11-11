@@ -177,8 +177,16 @@ class Presentation(MTk.Frame):
         self.icomment_fld.bind("<Return>", lambda e: "break")
 
     def mainloop(self):
+        self._canvasMainloop()
         self.frame.mainloop()
         self.frame.destroy()
+
+    def _canvasMainloop(self):
+        ifile = Image.open("index.jpeg")
+        picture = ImageTk.PhotoImage(ifile)
+        self.image_on_canvas = self.canvas.create_image(0, 0, image=picture, anchor=MTk.NW)
+        self.canvas.mainloop()
+        self.canvas.destroy()
 
     def _quit(self, event=MTk.NONE):
         self.frame.destroy()
@@ -223,9 +231,8 @@ class Presentation(MTk.Frame):
         # update canvas
         ifile = Image.open(os.path.join(self.path, imageInfo.getLeft()))
         picture = ImageTk.PhotoImage(ifile)
-        self.canvas.delete(MTk.ALL)
-        self.canvas.create_image(0, 0, image=picture, anchor = MTk.NW)
-        self.canvas.mainloop()
+        self.canvas.itemconfig(self.image_on_canvas, image=picture)
+        self.update()
 
     def getImageTitle(self):
         return self.ititle_fld.get()
