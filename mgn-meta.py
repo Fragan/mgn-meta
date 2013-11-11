@@ -172,9 +172,13 @@ class Presentation(MTk.Frame):
         self.frame.bind('<Control-O>', self._browse)
         self.frame.bind('<Control-o>', self._browse)
 
+        # Disable 'Enter' key in the Text widget
+        self.gcomment_fld.bind("<Return>", lambda e: "break")
+        self.icomment_fld.bind("<Return>", lambda e: "break")
+
     def mainloop(self):
         self.frame.mainloop()
-#         self.frame.destroy()
+        self.frame.destroy()
 
     def _quit(self, event=MTk.NONE):
         self.frame.destroy()
@@ -187,7 +191,7 @@ class Presentation(MTk.Frame):
         self.controller.setPath(self.path)
 
     def _validateGalleryInfo(self):
-        self.controller.setGalleryInfo(self.gtitle_fld.get(), self.gcomment_fld.get())
+        self.controller.setGalleryInfo(self.gtitle_fld.get(), self.gcomment_fld.get(1.0, 1.65000))
 
     def _execute(self):
         self.controller.execute()
@@ -227,7 +231,7 @@ class Presentation(MTk.Frame):
         return self.ititle_fld.get()
 
     def getImageComment(self):
-        return self.icomment_fld.get(0.0)
+        return self.icomment_fld.get(1.0, 1.65000)
 
 class Controller():
 
@@ -314,11 +318,11 @@ class Abstraction():
     #
     def setPath(self, path):
         self.path = path
-        if self.checkMetadataFile():
-            self.retrieveMetadataFromFile()
-            self.updateImagesList()
+        if self._checkMetadataFile():
+            self._retrieveMetadataFromFile()
+            self._updateImagesList()
         else:
-            self.prepareNewMetadataFile()
+            self._prepareNewMetadataFile()
 
         self.images.sort(key=lambda imageName: imageName.getLeft())
 
@@ -327,21 +331,21 @@ class Abstraction():
     ##
     # Internal usage
     #
-    def checkMetadataFile(self):
+    def _checkMetadataFile(self):
         return os.path.exists(os.path.join(self.path, 'metadata.txt'))
 
     ##
     # Internal usage
     #
-    def prepareNewMetadataFile(self):
+    def _prepareNewMetadataFile(self):
         os.chdir(self.path)
         for file in glob.glob("*.jpg"):
-            self.addImage(file)
+            self._addImage(file)
 
     ##
     # Internal usage
     #
-    def addImage(self, file):
+    def _addImage(self, file):
         image = Triple()
         image.setLeft(file).setMidle("Empty").setRight("Empty")
         self.images.append(image)
@@ -349,7 +353,7 @@ class Abstraction():
     ##
     # Internal usage
     #
-    def retrieveMetadataFromFile(self):
+    def _retrieveMetadataFromFile(self):
         try:
             metadataFile = open(os.path.join(self.path, 'metadata.txt'), encoding='ISO-8859-1')
 
@@ -379,7 +383,7 @@ class Abstraction():
     #
     # Add or remove image from metadata.txt depending the images contains in directory
     #
-    def updateImagesList(self):
+    def _updateImagesList(self):
         self.logger.debug("Check image files and update metadata.txt")
         imagesContainsInDirectory = []
         os.chdir(self.path)
@@ -415,6 +419,7 @@ class Abstraction():
     def setGalleryInfo(self, gtitle, gcomment):
         self.gtitle = gtitle
         self.gcomment = gcomment
+        self.logger.info("Gallery\'s name: [{0}] - Gallery's comment: [{1}]".format(self.gtitle, self.gcomment))
 
     def getGalleryTitle(self):
         return self.gtitle
@@ -436,7 +441,7 @@ class Abstraction():
             Mb.showinfo("", "All images reads")
 
     def previous(self):
-        if (self.index >= 0):
+        if (self.index > 0):
             self.index -= 1
             self.updateObservers()
         else:
