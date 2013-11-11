@@ -24,6 +24,10 @@ import codecs
 import logging
 from logging.handlers import RotatingFileHandler
 import re
+from threading import Timer
+
+# In second
+DEFAULT_TIME_TO_BACKUP = 300
 
 LOG_LEVEL = logging.DEBUG
 formatter = logging.Formatter('%(asctime)s - %(levelname)s -  %(name)s -> %(message)s')
@@ -173,16 +177,6 @@ class Presentation():
         self.gcomment_fld.bind("<Return>", lambda e: "break")
         self.icomment_fld.bind("<Return>", lambda e: "break")
 
-#     def mainloop(self):
-#         self._canvasMainloop()
-#         self.frame.mainloop()
-#
-#     def _canvasMainloop(self):
-#         ifile = Image.open("index.jpeg")
-#         picture = ImageTk.PhotoImage(ifile)
-#         self.image_on_canvas = self.canvas.create_image(0, 0, image=picture, anchor=MTk.NW)
-#         self.canvas.mainloop()
-
     def _quit(self, event=MTk.NONE):
         self.main.destroy()
 
@@ -245,13 +239,11 @@ class Controller():
         self.logger.addHandler(steam_handler)
 
         self.logger.info("New MGN instance")
+        self.logger.info("Time between each backup: {0}s".format(DEFAULT_TIME_TO_BACKUP))
 
         self.abstraction = Abstraction()
         self.presentation = Presentation(main, self)
         self.abstraction.attach(self.presentation)
-
-#     def mainloop(self):
-#         self.presentation.mainloop()
 
     def previous(self):
         self.logger.debug("Event: previous")
@@ -293,6 +285,9 @@ class Abstraction():
         self.gcomment = ""
         self.images = []
         self.index = 0
+        self.backup_number = 1
+
+        self._timedBackup()
 
     def attach(self, observer):
         self.logger.debug("Attach observer")
@@ -448,7 +443,7 @@ class Abstraction():
         else:
             Mb.showinfo("", "This is already the first image")
 
-    def execute(self):
+    def execute(self, file='metadata.txt'):
         sb = StringBuilder()
         sb.append("title|").append(self.gtitle).append("@").append(self.gcomment).append("\n")
 
@@ -459,12 +454,26 @@ class Abstraction():
 
         print(sb.toString())
         try:
-            outputFile = codecs.open(os.path.join(self.path, 'metadata.txt'), 'w', 'ISO-8859-1')
+            outputFile = codecs.open(os.path.join(self.path, file), 'w', 'ISO-8859-1')
             outputFile.write(sb.toString())
         except IOError as e:
             self.logger.error("I/O error({0}): {1}".format(e.errno, e.strerror))
         finally:
             outputFile.close()
+
+    ##
+    #
+    # This is a routine to backup current edition of metadata.txt
+    #
+    def _timedBackup(self):
+        timer = Timer(DEFAULT_TIME_TO_BACKUP, self._timedBackup)
+        timer.setDaemon(True)
+        timer.start()
+        if (self.gtitle != ""):
+            backup = 'backup_'+self.backup_number.__str__()+'.txt'
+            self.logger.info('Perform backup: '+backup)
+            self.execute(backup)
+            self.backup_number += 1
 
 
 ###########################
