@@ -7,13 +7,6 @@ if sys.version_info[0] < 3:
     print("This script requires Python version 3.x")
     sys.exit(1)
 
-# if sys.platform == 'linux':
-#     print("Found Linux distribution -")
-# elif sys.platform == 'darwin':
-#     print("Found Mac OSX distribution -")
-#     # Add sys path for PIL
-#     sys.path.append("/opt/local/Library/Frameworks/Python.framework/Versions/3.3/lib/python3.3/site-packages")
-
 from PIL import Image, ImageTk
 
 from cgitb import text
@@ -41,36 +34,36 @@ file_handler.setFormatter(formatter)
 steam_handler = logging.StreamHandler()
 steam_handler.setLevel(LOG_LEVEL)
 
-class Presentation(MTk.Frame):
+class Presentation():
 
-    def __init__(self, controller, **kwargs):
+    def __init__(self, main, controller, **kwargs):
         self.logger = logging.getLogger('Presentation')
         self.logger.setLevel(LOG_LEVEL)
         self.logger.addHandler(file_handler)
         self.logger.addHandler(steam_handler)
 
+        self.main = main
         self.controller = controller
 
-        self.frame = MTk.Tk()
-        MTk.Frame.__init__(self, self.frame, width=1280, height=720, **kwargs)
-        self.frame.option_readfile("look-and-feel-options.ini")
         self.path = MTk.StringVar()
 
         self._initView()
         self._bindKey()
 
     def _initView(self):
-        self.frame.wm_title("MiniGal Nano++ metadata generator")
-        self.pack()
+        self.frame = MTk.Frame(self.main)
+        self.frame.config(width=1280, height=720)
+        self.frame.option_readfile("look-and-feel-options.ini")
+        self.frame.pack()
 
         ##########
-        self.browse_pnl = MTk.Frame(self)
+        self.browse_pnl = MTk.Frame(self.frame)
         self.browse_pnl.pack(anchor=MTk.N, expand=MTk.YES, fill=MTk.X)
 
-        self.separator1 = MTk.Frame(self, height=2, bd=1, relief=MTk.SUNKEN)
+        self.separator1 = MTk.Frame(self.frame, height=2, bd=1, relief=MTk.SUNKEN)
         self.separator1.pack(fill=MTk.X, padx=5, pady=5)
 
-        self.edit_pnl = MTk.Frame(self)
+        self.edit_pnl = MTk.Frame(self.frame)
         self.edit_pnl.pack(anchor=MTk.S, expand=MTk.YES, fill=MTk.X)
 
         self.tools_pnl = MTk.Frame(self.edit_pnl)
@@ -80,7 +73,7 @@ class Presentation(MTk.Frame):
         self.img_pnl.pack(side=MTk.LEFT, fill=MTk.BOTH)
 
         ##########
-        self.path_lbl = MTk.Label(self.browse_pnl, text="Gallery\'s path:", anchor=MTk.W, fg="black")
+        self.path_lbl = MTk.Label(self.browse_pnl, text="Gallery\'s path:", anchor=MTk.W)
         self.path_lbl.pack(anchor=MTk.NW, padx=4)
 
         self.path_txt_line = MTk.Entry(self.browse_pnl, textvariable=self.path)
@@ -111,14 +104,18 @@ class Presentation(MTk.Frame):
 
         self.canvas.pack(side=MTk.LEFT, expand=MTk.YES, fill=MTk.BOTH)
 
+        self.ifile = Image.open("index.jpeg")
+        self.picture = ImageTk.PhotoImage(self.ifile)
+        self.image_on_canvas = self.canvas.create_image(0, 0, image=self.picture, anchor=MTk.NW)
+
         ##########
-        self.gtitle_lbl = MTk.Label(self.tools_pnl, text="Gallery\'s title:", anchor=MTk.W, fg="black")
+        self.gtitle_lbl = MTk.Label(self.tools_pnl, text="Gallery\'s title:", anchor=MTk.W)
         self.gtitle_lbl.pack(anchor=MTk.W)
 
         self.gtitle_fld = MTk.Entry(self.tools_pnl, width=40)
         self.gtitle_fld.pack(anchor=MTk.W)
 
-        self.gcomment_lbl = MTk.Label(self.tools_pnl, text="Gallery\'s comment:", anchor=MTk.W, fg="black")
+        self.gcomment_lbl = MTk.Label(self.tools_pnl, text="Gallery\'s comment:", anchor=MTk.W)
         self.gcomment_lbl.pack(anchor=MTk.W)
 
         self.gcomment_fld = MTk.Text(self.tools_pnl, width=40, height=5)
@@ -136,13 +133,13 @@ class Presentation(MTk.Frame):
         self.img_info_pnl.pack(pady=4)
 
         ##
-        self.ititle_lbl = MTk.Label(self.img_info_pnl, text="Image\'s title:", anchor=MTk.W, fg="black")
+        self.ititle_lbl = MTk.Label(self.img_info_pnl, text="Image\'s title:", anchor=MTk.W)
         self.ititle_lbl.pack(anchor=MTk.W)
 
         self.ititle_fld = MTk.Entry(self.img_info_pnl, width=40)
         self.ititle_fld.pack(anchor=MTk.W)
 
-        self.icomment_lbl = MTk.Label(self.img_info_pnl, text="Image\'s comment:", anchor=MTk.W, fg="black")
+        self.icomment_lbl = MTk.Label(self.img_info_pnl, text="Image\'s comment:", anchor=MTk.W)
         self.icomment_lbl.pack(anchor=MTk.W)
 
         self.icomment_fld = MTk.Text(self.img_info_pnl, width=40, height=5)
@@ -176,20 +173,18 @@ class Presentation(MTk.Frame):
         self.gcomment_fld.bind("<Return>", lambda e: "break")
         self.icomment_fld.bind("<Return>", lambda e: "break")
 
-    def mainloop(self):
-        self._canvasMainloop()
-        self.frame.mainloop()
-        self.frame.destroy()
-
-    def _canvasMainloop(self):
-        ifile = Image.open("index.jpeg")
-        picture = ImageTk.PhotoImage(ifile)
-        self.image_on_canvas = self.canvas.create_image(0, 0, image=picture, anchor=MTk.NW)
-        self.canvas.mainloop()
-        self.canvas.destroy()
+#     def mainloop(self):
+#         self._canvasMainloop()
+#         self.frame.mainloop()
+#
+#     def _canvasMainloop(self):
+#         ifile = Image.open("index.jpeg")
+#         picture = ImageTk.PhotoImage(ifile)
+#         self.image_on_canvas = self.canvas.create_image(0, 0, image=picture, anchor=MTk.NW)
+#         self.canvas.mainloop()
 
     def _quit(self, event=MTk.NONE):
-        self.frame.destroy()
+        self.main.destroy()
 
     def _browse(self, event=MTk.NONE):
         self.path = Fd.askdirectory(title="Select a directory")
@@ -229,10 +224,9 @@ class Presentation(MTk.Frame):
         self.icomment_fld.insert(0.0, imageInfo.getRight())
 
         # update canvas
-        ifile = Image.open(os.path.join(self.path, imageInfo.getLeft()))
-        picture = ImageTk.PhotoImage(ifile)
-        self.canvas.itemconfig(self.image_on_canvas, image=picture)
-        self.update()
+        self.ifile = Image.open(os.path.join(self.path, imageInfo.getLeft()))
+        self.picture = ImageTk.PhotoImage(self.ifile)
+        self.canvas.itemconfig(self.image_on_canvas, image=self.picture)
 
     def getImageTitle(self):
         return self.ititle_fld.get()
@@ -242,7 +236,7 @@ class Presentation(MTk.Frame):
 
 class Controller():
 
-    def __init__(self):
+    def __init__(self, main):
         super(Controller, self).__init__()
 
         self.logger = logging.getLogger('Controller')
@@ -253,11 +247,11 @@ class Controller():
         self.logger.info("New MGN instance")
 
         self.abstraction = Abstraction()
-        self.presentation = Presentation(self)
+        self.presentation = Presentation(main, self)
         self.abstraction.attach(self.presentation)
 
-    def mainloop(self):
-        self.presentation.mainloop()
+#     def mainloop(self):
+#         self.presentation.mainloop()
 
     def previous(self):
         self.logger.debug("Event: previous")
@@ -477,5 +471,7 @@ class Abstraction():
 # Launch the main frame
 ###########################
 if __name__ == '__main__':
-    controller = Controller()
-    controller.mainloop()
+    root = MTk.Tk()
+    root.wm_title("MiniGal Nano++ metadata generator")
+    controller = Controller(root)
+    root.mainloop()
