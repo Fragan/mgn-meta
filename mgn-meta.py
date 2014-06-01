@@ -418,7 +418,7 @@ class Abstraction():
                 self.logger.debug("{0}: nothing to do".format(imaged))
             else:
                 self.logger.debug("{0}: add the photo in metadata.txt".format(imaged))
-                self.addImage(imaged)
+                self._addImage(imaged)
 
     def getPath(self):
         return self.path
