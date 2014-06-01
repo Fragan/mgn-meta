@@ -178,6 +178,7 @@ class Presentation():
         self.icomment_fld.bind("<Return>", lambda e: "break")
 
     def _quit(self, event=MTk.NONE):
+        print("--QUIT--")
         self.main.destroy()
 
     def _browse(self, event=MTk.NONE):
@@ -247,11 +248,13 @@ class Controller():
 
     def previous(self):
         self.logger.debug("Event: previous")
+        self._checkIsValidate()
         self.abstraction.setImageInfo(self.presentation.getImageTitle(), self.presentation.getImageComment())
         self.abstraction.previous()
 
     def next(self):
         self.logger.debug("Event: next")
+        self._checkIsValidate()
         self.abstraction.setImageInfo(self.presentation.getImageTitle(), self.presentation.getImageComment())
         self.abstraction.next()
 
@@ -264,10 +267,16 @@ class Controller():
 
     def setGalleryInfo(self, gtitle, gcomment):
         self.abstraction.setGalleryInfo(gtitle, gcomment)
+        self.setValidate(True)
 
     def execute(self):
         self.logger.debug("File generation")
         self.abstraction.execute()
+
+    def _checkIsValidate(self):
+        validate = self.abstraction.isValidate()
+        if ~validate:
+            print("not validate")
 
 class Abstraction():
 
@@ -286,6 +295,8 @@ class Abstraction():
         self.images = []
         self.index = 0
         self.backup_number = 1
+
+        self.validate = True
 
         self._timedBackup()
 
@@ -475,6 +486,11 @@ class Abstraction():
             self.execute(backup)
             self.backup_number += 1
 
+    def isValidate(self):
+        return self.validate
+
+    def setValidate(self, boolean):
+        self.validate = boolean
 
 ###########################
 # Launch the main frame
