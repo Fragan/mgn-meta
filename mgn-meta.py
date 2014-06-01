@@ -366,14 +366,14 @@ class Abstraction():
 
             # parsing metadata.txt
             for line in metadataFile:
-                # gallery metadatas
+                # gallery metadata
                 if line.startswith("title|"):
                     match = re.search(r"title\|(.*)\@(.*)", line)
                     if match:
                         self.gtitle = match.group(1)
                         self.gcomment = match.group(2)
                 else:
-                    # image metadadas
+                    # image metadada
                     match = re.search(r"(.*)\|(.*)::(.*)", line)
                     if match:
                         image = Triple()
