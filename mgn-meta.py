@@ -221,6 +221,9 @@ class Presentation():
         # update canvas
         self.ifile = Image.open(os.path.join(self.path, imageInfo.getLeft()))
         self.picture = ImageTk.PhotoImage(self.ifile)
+        scale_w = 80
+        scale_h = 80
+        self.picture.zoom(scale_w, scale_h)
         self.canvas.itemconfig(self.image_on_canvas, image=self.picture)
 
     def getImageTitle(self):
