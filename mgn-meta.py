@@ -178,6 +178,7 @@ class Presentation():
         self.icomment_fld.bind("<Return>", lambda e: "break")
 
     def _quit(self, event=MTk.NONE):
+        print("--QUIT--")
         self.main.destroy()
 
     def _browse(self, event=MTk.NONE):
@@ -220,6 +221,9 @@ class Presentation():
         # update canvas
         self.ifile = Image.open(os.path.join(self.path, imageInfo.getLeft()))
         self.picture = ImageTk.PhotoImage(self.ifile)
+        scale_w = 80
+        scale_h = 80
+        self.picture.zoom(scale_w, scale_h)
         self.canvas.itemconfig(self.image_on_canvas, image=self.picture)
 
     def getImageTitle(self):
@@ -247,11 +251,13 @@ class Controller():
 
     def previous(self):
         self.logger.debug("Event: previous")
+        self._checkIsValidate()
         self.abstraction.setImageInfo(self.presentation.getImageTitle(), self.presentation.getImageComment())
         self.abstraction.previous()
 
     def next(self):
         self.logger.debug("Event: next")
+        self._checkIsValidate()
         self.abstraction.setImageInfo(self.presentation.getImageTitle(), self.presentation.getImageComment())
         self.abstraction.next()
 
@@ -264,10 +270,16 @@ class Controller():
 
     def setGalleryInfo(self, gtitle, gcomment):
         self.abstraction.setGalleryInfo(gtitle, gcomment)
+        self.setValidate(True)
 
     def execute(self):
         self.logger.debug("File generation")
         self.abstraction.execute()
+
+    def _checkIsValidate(self):
+        validate = self.abstraction.isValidate()
+        if ~validate:
+            print("not validate")
 
 class Abstraction():
 
@@ -286,6 +298,8 @@ class Abstraction():
         self.images = []
         self.index = 0
         self.backup_number = 1
+
+        self.validate = True
 
         self._timedBackup()
 
@@ -355,14 +369,14 @@ class Abstraction():
 
             # parsing metadata.txt
             for line in metadataFile:
-                # gallery metadatas
+                # gallery metadata
                 if line.startswith("title|"):
                     match = re.search(r"title\|(.*)\@(.*)", line)
                     if match:
                         self.gtitle = match.group(1)
                         self.gcomment = match.group(2)
                 else:
-                    # image metadadas
+                    # image metadada
                     match = re.search(r"(.*)\|(.*)::(.*)", line)
                     if match:
                         image = Triple()
@@ -407,7 +421,7 @@ class Abstraction():
                 self.logger.debug("{0}: nothing to do".format(imaged))
             else:
                 self.logger.debug("{0}: add the photo in metadata.txt".format(imaged))
-                self.addImage(imaged)
+                self._addImage(imaged)
 
     def getPath(self):
         return self.path
@@ -475,6 +489,11 @@ class Abstraction():
             self.execute(backup)
             self.backup_number += 1
 
+    def isValidate(self):
+        return self.validate
+
+    def setValidate(self, boolean):
+        self.validate = boolean
 
 ###########################
 # Launch the main frame
