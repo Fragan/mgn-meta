@@ -5,26 +5,26 @@ class Triple():
         self.midle = object()
         self.right = object()
 
-    def setLeft(self, left):
+    def set_left(self, left):
         self.left = left
         return self
 
-    def getLeft(self):
+    def get_left(self):
         return self.left
 
-    def setMidle(self, midle):
+    def set_midle(self, midle):
         self.midle = midle
         return self
 
-    def getMidle(self):
+    def get_midle(self):
         return self.midle
 
-    def setRight(self, right):
+    def set_right(self, right):
         self.right = right
         return self
 
-    def getRight(self):
+    def get_right(self):
         return self.right
 
-    def toString(self):
+    def to_s(self):
         return "[{0}, {1}, {2}]".format(self.left.__str__(), self.midle.__str__(), self.right.__str__())
