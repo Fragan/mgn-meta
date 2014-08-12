@@ -19,7 +19,6 @@ import tkinter as MTk
 import tkinter.filedialog as Fd
 import tkinter.messagebox as Mb
 from StringBuilder import StringBuilder
-from Triple import Triple
 import codecs
 import logging
 from logging.handlers import RotatingFileHandler
@@ -211,15 +210,15 @@ class Presentation():
 
         # update images's textfields and label
         image_info = subject.get_image_info()
-        self.logger.debug((image_info.to_s()))
-        self.img_lbl.configure(text=image_info.get_left())
+        self.logger.debug(image_info)
+        self.img_lbl.configure(text=image_info['filename'])
         self.ititle_fld.delete(0, MTk.END)
-        self.ititle_fld.insert(0, image_info.get_midle())
+        self.ititle_fld.insert(0, image_info['title'])
         self.icomment_fld.delete(0.0, MTk.END)
-        self.icomment_fld.insert(0.0, image_info.get_right())
+        self.icomment_fld.insert(0.0, image_info['description'])
 
         # update canvas
-        self.ifile = Image.open(os.path.join(self.path, image_info.get_left()))
+        self.ifile = Image.open(os.path.join(self.path, image_info['filename']))
         self.picture = ImageTk.PhotoImage(self.ifile)
         scale_w = 80
         scale_h = 80
@@ -251,7 +250,7 @@ class Controller():
 
     def previous(self):
         self.logger.debug("Event: previous")
-        self._checkIsValidate()
+        self._check_is_validate()
         self.abstraction.set_image_info(self.presentation.get_image_title(), self.presentation.get_image_comment())
         self.abstraction.previous()
 
@@ -292,10 +291,13 @@ class Abstraction():
         self.logger.addHandler(steam_handler)
 
         self.observers = []
-        self.path = ""
-        self.gtitle = ""
-        self.gcomment = ""
-        self.images = []
+        self.path = ''
+        self.metadata = {
+            'title': '',
+            'description': '',
+            'images': []
+        }
+
         self.index = 0
         self.backup_number = 1
 
@@ -304,23 +306,25 @@ class Abstraction():
         self._timed_backup()
 
     def attach(self, observer):
-        self.logger.debug("Attach observer")
+        self.logger.debug('Attach observer')
         self.observers.append(observer)
 
     def detach(self, observer):
-        self.logger.debug("Detach observer")
+        self.logger.debug('Detach observer')
         self.observers.remove(observer)
 
     def update_observers(self):
-        self.logger.debug("Update observer")
+        self.logger.debug('Update observer')
         for observer in self.observers:
             observer.update(self)
 
     def clear(self):
-        self.path = ""
-        self.gtitle = ""
-        self.gcomment = ""
-        self.images = []
+        self.path = ''
+        self.metadata = {
+            'title': '',
+            'description': '',
+            'images': []
+        }
         self.index = 0
 
     ##
@@ -334,7 +338,7 @@ class Abstraction():
         else:
             self._prepare_new_metadata_file()
 
-        self.images.sort(key=lambda image_name: image_name.get_left())
+        self.metadata['images'].sort(key=lambda image_name: image_name['filename'])
 
         self.update_observers()
 
@@ -356,9 +360,10 @@ class Abstraction():
     # Internal usage
     #
     def _add_image(self, file):
-        image = Triple()
-        image.set_left(file).set_midle("Empty").set_right("Empty")
-        self.images.append(image)
+        self.metadata['images'].append({ 'filename': file, 'title': '', 'description': '' })
+        #image = Triple()
+        #image.set_left(file).set_midle('Empty').set_right('Empty')
+        #self.images.append(image)
 
     ##
     # Internal usage
@@ -370,18 +375,16 @@ class Abstraction():
             # parsing metadata.txt
             for line in metadata_file:
                 # gallery metadata
-                if line.startswith("title|"):
+                if line.startswith('title|'):
                     match = re.search(r"title\|(.*)\@(.*)", line)
                     if match:
-                        self.gtitle = match.group(1)
-                        self.gcomment = match.group(2)
+                        self.metadata['title'] = match.group(1)
+                        self.metadata['description'] = match.group(2)
                 else:
                     # image metadada
                     match = re.search(r"(.*)\|(.*)::(.*)", line)
                     if match:
-                        image = Triple()
-                        image.set_left(match.group(1)).set_midle(match.group(2)).set_right(match.group(3))
-                        self.images.append(image)
+                        self.metadata['images'].append({ 'filename': match.group(1), 'title': match.group(2), 'description': match.group(3) })
 
         except IOError as e:
             self.logger.error("I/O error({0}): {1}".format(e.errno, e.strerror))
@@ -394,7 +397,7 @@ class Abstraction():
     # Add or remove image from metadata.txt depending the images contains in directory
     #
     def _update_images_list(self):
-        self.logger.debug("Check image files and update metadata.txt")
+        self.logger.debug('Check image files and update metadata.txt')
         images_contains_in_directory = []
         os.chdir(self.path)
         for file in glob.glob("*.jpg"):
@@ -404,9 +407,9 @@ class Abstraction():
 
         # FIXME: find an efficient way to check the files
 
-        self.logger.debug("First pass")
-        for imagem in self.images:
-            imageml = imagem.get_left()
+        self.logger.debug('First pass')
+        for imagem in self.metadata['images']:
+            imageml = imagem['filename']
             tmp_images.append(imageml)
 
             if (imageml in images_contains_in_directory):
@@ -415,7 +418,7 @@ class Abstraction():
                 self.logger.debug("{0}: remove the photo from metadata.txt".format(imageml))
                 self.images.remove(imagem)
 
-        self.logger.debug("Second pass")
+        self.logger.debug('Second pass')
         for imaged in images_contains_in_directory:
             if (imaged in tmp_images):
                 self.logger.debug("{0}: nothing to do".format(imaged))
@@ -427,44 +430,46 @@ class Abstraction():
         return self.path
 
     def set_gallery_info(self, gtitle, gcomment):
-        self.gtitle = gtitle
-        self.gcomment = gcomment
-        self.logger.info("Gallery\'s name: [{0}] - Gallery's comment: [{1}]".format(self.gtitle, self.gcomment))
+        self.metadata['title'] = gtitle
+        self.metadata['description'] = gcomment
+        self.logger.info("Gallery\'s name: [{0}] - Gallery's comment: [{1}]".format(gtitle, gcomment))
 
     def get_gallery_title(self):
-        return self.gtitle
+        return self.metadata['title']
 
     def get_gallery_comment(self):
-        return self.gcomment
+        return self.metadata['description']
 
     def set_image_info(self, ititle, icomment):
-        self.images[self.index].set_midle(ititle).set_right(icomment)
+        image = self.metadata['images'][self.index]
+        image['title'] = ititle
+        image['description'] = icomment
 
     def get_image_info(self):
-        return self.images[self.index]
+        return self.metadata['images'][self.index]
 
     def next(self):
-        if (self.index < len(self.images)-1):
+        if (self.index < len(self.metadata['images'])-1):
             self.index += 1
             self.update_observers()
         else:
-            Mb.showinfo("", "All images reads")
+            Mb.showinfo('', 'All images reads')
 
     def previous(self):
         if (self.index > 0):
             self.index -= 1
             self.update_observers()
         else:
-            Mb.showinfo("", "This is already the first image")
+            Mb.showinfo('', 'This is already the first image')
 
     def execute(self, file='metadata.txt'):
         sb = StringBuilder()
-        sb.append("title|").append(self.gtitle).append("@").append(self.gcomment).append("\n")
+        sb.append('title|').append(self.metadata['title']).append('@').append(self.metadata['description']).append("\n")
 
         os.chdir(self.path)
-        for image in self.images:
-            sb.append(image.get_left().__str__()).append("|").append(image.get_midle().__str__()).append("::")
-            sb.append(image.get_right().__str__()).append("\n")
+        for image in self.metadata['images']:
+            sb.append(image['filename'].__str__()).append('|').append(image['title'].__str__()).append('::')
+            sb.append(image['description'].__str__()).append("\n")
 
         print(sb.to_s())
         try:
@@ -483,7 +488,7 @@ class Abstraction():
         timer = Timer(DEFAULT_TIME_TO_BACKUP, self._timed_backup)
         timer.setDaemon(True)
         timer.start()
-        if (self.gtitle != ""):
+        if (self.metadata['title'] != ""):
             backup = 'backup_'+self.backup_number.__str__()+'.txt'
             self.logger.info('Perform backup: '+backup)
             self.execute(backup)
