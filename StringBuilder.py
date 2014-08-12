@@ -10,10 +10,10 @@ class StringBuilder():
         self.builder.append(string)
         return self
 
-    def toString(self):
+    def to_s(self):
         return ''.join(self.builder)
 
     # doesn't work
-    def toStringCharset(self, charset):
+    def to_s_charset(self, charset):
         tmp = ''.join(self.builder)
         return tmp.encode(encoding=charset, errors='strict')
