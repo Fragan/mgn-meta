@@ -24,6 +24,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import re
 from threading import Timer
+import json
 
 # In second
 DEFAULT_TIME_TO_BACKUP = 300
@@ -369,6 +370,13 @@ class Abstraction():
     # Internal usage
     #
     def _retrieve_metadata_from_file(self):
+        self._retrieve_metadata_from_file()
+
+    def _retrieve_metadata_from_file_json(self):
+        with open(os.path.join(self.path, 'metadata.json'), encoding='ISO-8859-1') as metadata_file:
+            self.metadata = json.load(metadata_file)
+
+    def _retrieve_metadata_from_file_txt(self):
         try:
             metadata_file = open(os.path.join(self.path, 'metadata.txt'), encoding='ISO-8859-1')
 
@@ -462,7 +470,17 @@ class Abstraction():
         else:
             Mb.showinfo('', 'This is already the first image')
 
-    def execute(self, file='metadata.txt'):
+    def execute(self, file=''):
+     if not file:
+         self.execute_json()
+     else:
+         self.execute_txt(file)
+
+    def execute_json(self, file='metadata.json'):
+        print(json.dumps(self.metadata, indent=2, ensure_ascii=False))
+        self._write(file, json.dumps(self.metadata, indent=2, ensure_ascii=False))
+
+    def execute_txt(self, file='metadata.txt'):
         sb = StringBuilder()
         sb.append('title|').append(self.metadata['title']).append('@').append(self.metadata['description']).append("\n")
 
@@ -472,9 +490,12 @@ class Abstraction():
             sb.append(image['description'].__str__()).append("\n")
 
         print(sb.to_s())
+        self._write(file, sb.to_s())
+
+    def _write(self, file, data):
         try:
             output_file = codecs.open(os.path.join(self.path, file), 'w', 'ISO-8859-1')
-            output_file.write(sb.to_s())
+            output_file.write(data)
         except IOError as e:
             self.logger.error("I/O error({0}): {1}".format(e.errno, e.strerror))
         finally:
