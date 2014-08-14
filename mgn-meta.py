@@ -25,6 +25,7 @@ from logging.handlers import RotatingFileHandler
 import re
 from threading import Timer
 import json
+import configparser
 
 # In second
 DEFAULT_TIME_TO_BACKUP = 300
@@ -291,6 +292,7 @@ class Abstraction():
         self.logger.addHandler(file_handler)
         self.logger.addHandler(steam_handler)
 
+        self.options = self._parse_options()
         self.observers = []
         self.path = ''
         self.metadata = {
@@ -305,6 +307,14 @@ class Abstraction():
         self.validate = True
 
         self._timed_backup()
+
+    def _parse_options(self):
+        opts = configparser.ConfigParser()
+        opts.read('config.ini')
+        return opts
+
+    def get_options(self):
+        return self.options
 
     def attach(self, observer):
         self.logger.debug('Attach observer')
@@ -362,15 +372,13 @@ class Abstraction():
     #
     def _add_image(self, file):
         self.metadata['images'].append({ 'filename': file, 'title': '', 'description': '' })
-        #image = Triple()
-        #image.set_left(file).set_midle('Empty').set_right('Empty')
-        #self.images.append(image)
 
     ##
     # Internal usage
     #
     def _retrieve_metadata_from_file(self):
-        self._retrieve_metadata_from_file()
+        # FIXME: json then txt then nothing
+        self._retrieve_metadata_from_file_json()
 
     def _retrieve_metadata_from_file_json(self):
         with open(os.path.join(self.path, 'metadata.json'), encoding='ISO-8859-1') as metadata_file:
@@ -471,10 +479,11 @@ class Abstraction():
             Mb.showinfo('', 'This is already the first image')
 
     def execute(self, file=''):
-     if not file:
-         self.execute_json()
-     else:
-         self.execute_txt(file)
+        method = 'execute_' + self.options['abstraction']['output_format']
+        if not file:
+            getattr(self, method)()
+        else:
+            getattr(self, method)(file)
 
     def execute_json(self, file='metadata.json'):
         print(json.dumps(self.metadata, indent=2, ensure_ascii=False))
