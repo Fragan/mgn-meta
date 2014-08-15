@@ -58,7 +58,7 @@ class Presentation():
     def _init_view(self):
         self.frame = MTk.Frame(self.main)
         self.frame.config(width=1280, height=720)
-        self.frame.option_readfile("look-and-feel-options.ini")
+        self.frame.option_readfile('look-and-feel-options.ini')
         self.frame.pack()
 
         ##########
@@ -84,11 +84,11 @@ class Presentation():
         self.path_txt_line = MTk.Entry(self.browse_pnl, textvariable=self.path)
         self.path_txt_line.pack(padx=4, side=MTk.LEFT, expand=MTk.YES, fill=MTk.X)
 
-        self.browse_btn = MTk.Button(self.browse_pnl, text="Browse", command=self._browse)
+        self.browse_btn = MTk.Button(self.browse_pnl, text='Browse', command=self._browse)
         self.browse_btn.pack(padx=4, side=MTk.LEFT)
 
         ##########
-        self.img_lbl = MTk.Label(self.img_pnl, text="none")
+        self.img_lbl = MTk.Label(self.img_pnl, text='none')
         self.img_lbl.pack(expand=MTk.YES)
 
         self.canvas = MTk.Canvas(self.img_pnl)
@@ -109,7 +109,7 @@ class Presentation():
 
         self.canvas.pack(side=MTk.LEFT, expand=MTk.YES, fill=MTk.BOTH)
 
-        self.ifile = Image.open("index.jpeg")
+        self.ifile = Image.open('index.jpeg')
         self.picture = ImageTk.PhotoImage(self.ifile)
         self.image_on_canvas = self.canvas.create_image(0, 0, image=self.picture, anchor=MTk.NW)
 
@@ -126,7 +126,7 @@ class Presentation():
         self.gcomment_fld = MTk.Text(self.tools_pnl, width=40, height=5)
         self.gcomment_fld.pack(anchor=MTk.W)
 
-        self.gvalidate_btn = MTk.Button(self.tools_pnl, text="Validate", command=self._validate_gallery_info)
+        self.gvalidate_btn = MTk.Button(self.tools_pnl, text='Validate', command=self._validate_gallery_info)
         self.gvalidate_btn.pack(anchor=MTk.E)
 
         ##
@@ -154,17 +154,23 @@ class Presentation():
         self.img_btn_pnl = MTk.Frame(self.img_info_pnl)
         self.img_btn_pnl.pack(anchor=MTk.E)
 
-        self.nxt_img_btn = MTk.Button(self.img_btn_pnl, text="Previous", command=self.controller.previous)
+        self.nxt_img_btn = MTk.Button(self.img_btn_pnl, text='Previous', command=self.controller.previous)
         self.nxt_img_btn.pack(side=MTk.LEFT)
 
         self.nxt_img_btn = MTk.Button(self.img_btn_pnl, text="Next", command=self.controller.next)
         self.nxt_img_btn.pack(side=MTk.LEFT)
 
+        self.copy_img_btn = MTk.Button(self.img_btn_pnl, text='Copy', command=self._copy)
+        self.copy_img_btn.pack(side=MTk.LEFT)
+
+        self.paste_img_btn = MTk.Button(self.img_btn_pnl, text='Paste', command=self._paste)
+        self.paste_img_btn.pack(side=MTk.LEFT)
+
         ##
         self.separator3 = MTk.Frame(self.tools_pnl, height=2, bd=1, relief=MTk.SUNKEN)
         self.separator3.pack(fill=MTk.X, padx=5, pady=5)
 
-        self.generate_btn = MTk.Button(self.tools_pnl, text="Generate file", command=self._execute)
+        self.generate_btn = MTk.Button(self.tools_pnl, text='Generate file', command=self._execute)
         self.generate_btn.pack(anchor=MTk.N)
 
     def _bind_key(self):
@@ -179,11 +185,11 @@ class Presentation():
         self.icomment_fld.bind("<Return>", lambda e: "break")
 
     def _quit(self, event=MTk.NONE):
-        print("--QUIT--")
+        print('--QUIT--')
         self.main.destroy()
 
     def _browse(self, event=MTk.NONE):
-        self.path = Fd.askdirectory(title="Select a directory")
+        self.path = Fd.askdirectory(title='Select a directory')
 
         # set the new path
         self.controller.clear()
@@ -194,10 +200,20 @@ class Presentation():
 
     def _execute(self):
         self.controller.execute()
-        Mb.showinfo("", "Treatment completed")
+        Mb.showinfo('', 'Treatment completed')
+
+    def _copy(self):
+        self.controller.copy({ 'title': self.get_image_title(), 'description': self.get_image_comment() })
+
+    def _paste(self):
+        image_info = self.controller.paste()
+        self.ititle_fld.delete(0, MTk.END)
+        self.ititle_fld.insert(0, image_info['title'])
+        self.icomment_fld.delete(0.0, MTk.END)
+        self.icomment_fld.insert(0.0, image_info['description'])
 
     def update(self, subject):
-        self.logger.debug("Update the presentation")
+        self.logger.debug('Update the presentation')
 
         # update path's textfield
         self.path_txt_line.delete(0, MTk.END)
@@ -243,7 +259,7 @@ class Controller():
         self.logger.addHandler(file_handler)
         self.logger.addHandler(steam_handler)
 
-        self.logger.info("New MGN instance")
+        self.logger.info('New MGN instance')
         self.logger.info("Time between each backup: {0}s".format(DEFAULT_TIME_TO_BACKUP))
 
         self.abstraction = Abstraction()
@@ -251,13 +267,13 @@ class Controller():
         self.abstraction.attach(self.presentation)
 
     def previous(self):
-        self.logger.debug("Event: previous")
+        self.logger.debug('Event: previous')
         self._check_is_validate()
         self.abstraction.set_image_info(self.presentation.get_image_title(), self.presentation.get_image_comment())
         self.abstraction.previous()
 
     def next(self):
-        self.logger.debug("Event: next")
+        self.logger.debug('Event: next')
         self._check_is_validate()
         self.abstraction.set_image_info(self.presentation.get_image_title(), self.presentation.get_image_comment())
         self.abstraction.next()
@@ -273,14 +289,21 @@ class Controller():
         self.abstraction.set_gallery_info(gtitle, gcomment)
         self.set_validate(True)
 
+    def copy(self, image_info):
+        self.abstraction.set_buffer(image_info)
+
+    def paste(self):
+        return self.abstraction.get_buffer()
+
     def execute(self):
-        self.logger.debug("File generation")
+        self.logger.debug('File generation')
+        self.abstraction.set_image_info(self.presentation.get_image_title(), self.presentation.get_image_comment())
         self.abstraction.execute()
 
     def _check_is_validate(self):
         validate = self.abstraction.is_validate()
         if ~validate:
-            print("not validate")
+            print('not validate')
 
 class Abstraction():
 
@@ -300,6 +323,8 @@ class Abstraction():
             'description': '',
             'images': []
         }
+
+        self.buffer = { 'title': '', 'description': '' }
 
         self.index = 0
         self.backup_number = 1
@@ -381,12 +406,12 @@ class Abstraction():
         self._retrieve_metadata_from_file_json()
 
     def _retrieve_metadata_from_file_json(self):
-        with open(os.path.join(self.path, 'metadata.json'), encoding='ISO-8859-1') as metadata_file:
+        with open(os.path.join(self.path, 'metadata.json'), encoding=self.options['abstraction']['encoding']) as metadata_file:
             self.metadata = json.load(metadata_file)
 
     def _retrieve_metadata_from_file_txt(self):
         try:
-            metadata_file = open(os.path.join(self.path, 'metadata.txt'), encoding='ISO-8859-1')
+            metadata_file = open(os.path.join(self.path, 'metadata.txt'), encoding=self.options['abstraction']['encoding'])
 
             # parsing metadata.txt
             for line in metadata_file:
@@ -503,7 +528,7 @@ class Abstraction():
 
     def _write(self, file, data):
         try:
-            output_file = codecs.open(os.path.join(self.path, file), 'w', 'ISO-8859-1')
+            output_file = codecs.open(os.path.join(self.path, file), 'w', self.options['abstraction']['encoding'])
             output_file.write(data)
         except IOError as e:
             self.logger.error("I/O error({0}): {1}".format(e.errno, e.strerror))
@@ -529,6 +554,14 @@ class Abstraction():
 
     def set_validate(self, boolean):
         self.validate = boolean
+
+    def set_buffer(self, image_info):
+        self.logger.info('Define buffer: '+image_info.__str__())
+        self.buffer = image_info
+
+    def get_buffer(self):
+        self.logger.info('Buffer:'+self.buffer.__str__())
+        return self.buffer
 
 ###########################
 # Launch the main frame
