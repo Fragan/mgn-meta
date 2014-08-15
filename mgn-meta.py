@@ -19,12 +19,13 @@ import tkinter as MTk
 import tkinter.filedialog as Fd
 import tkinter.messagebox as Mb
 from StringBuilder import StringBuilder
-from Triple import Triple
 import codecs
 import logging
 from logging.handlers import RotatingFileHandler
 import re
 from threading import Timer
+import json
+import configparser
 
 # In second
 DEFAULT_TIME_TO_BACKUP = 300
@@ -57,7 +58,7 @@ class Presentation():
     def _init_view(self):
         self.frame = MTk.Frame(self.main)
         self.frame.config(width=1280, height=720)
-        self.frame.option_readfile("look-and-feel-options.ini")
+        self.frame.option_readfile('look-and-feel-options.ini')
         self.frame.pack()
 
         ##########
@@ -83,11 +84,11 @@ class Presentation():
         self.path_txt_line = MTk.Entry(self.browse_pnl, textvariable=self.path)
         self.path_txt_line.pack(padx=4, side=MTk.LEFT, expand=MTk.YES, fill=MTk.X)
 
-        self.browse_btn = MTk.Button(self.browse_pnl, text="Browse", command=self._browse)
+        self.browse_btn = MTk.Button(self.browse_pnl, text='Browse', command=self._browse)
         self.browse_btn.pack(padx=4, side=MTk.LEFT)
 
         ##########
-        self.img_lbl = MTk.Label(self.img_pnl, text="none")
+        self.img_lbl = MTk.Label(self.img_pnl, text='none')
         self.img_lbl.pack(expand=MTk.YES)
 
         self.canvas = MTk.Canvas(self.img_pnl)
@@ -108,7 +109,7 @@ class Presentation():
 
         self.canvas.pack(side=MTk.LEFT, expand=MTk.YES, fill=MTk.BOTH)
 
-        self.ifile = Image.open("index.jpeg")
+        self.ifile = Image.open('index.jpeg')
         self.picture = ImageTk.PhotoImage(self.ifile)
         self.image_on_canvas = self.canvas.create_image(0, 0, image=self.picture, anchor=MTk.NW)
 
@@ -125,7 +126,7 @@ class Presentation():
         self.gcomment_fld = MTk.Text(self.tools_pnl, width=40, height=5)
         self.gcomment_fld.pack(anchor=MTk.W)
 
-        self.gvalidate_btn = MTk.Button(self.tools_pnl, text="Validate", command=self._validate_gallery_info)
+        self.gvalidate_btn = MTk.Button(self.tools_pnl, text='Validate', command=self._validate_gallery_info)
         self.gvalidate_btn.pack(anchor=MTk.E)
 
         ##
@@ -153,17 +154,30 @@ class Presentation():
         self.img_btn_pnl = MTk.Frame(self.img_info_pnl)
         self.img_btn_pnl.pack(anchor=MTk.E)
 
-        self.nxt_img_btn = MTk.Button(self.img_btn_pnl, text="Previous", command=self.controller.previous)
+        self.img_btn_pnl_north = MTk.Frame(self.img_btn_pnl)
+        self.img_btn_pnl_north.pack(anchor=MTk.E)
+
+        self.copy_img_btn = MTk.Button(self.img_btn_pnl_north, text='Copy', command=self._copy)
+        self.copy_img_btn.pack(side=MTk.LEFT)
+
+        self.paste_img_btn = MTk.Button(self.img_btn_pnl_north, text='Paste', command=self._paste)
+        self.paste_img_btn.pack(side=MTk.LEFT)
+
+        #
+        self.img_btn_pnl_south = MTk.Frame(self.img_btn_pnl)
+        self.img_btn_pnl_south.pack(anchor=MTk.E)
+
+        self.nxt_img_btn = MTk.Button(self.img_btn_pnl_south, text='Previous', command=self.controller.previous)
         self.nxt_img_btn.pack(side=MTk.LEFT)
 
-        self.nxt_img_btn = MTk.Button(self.img_btn_pnl, text="Next", command=self.controller.next)
+        self.nxt_img_btn = MTk.Button(self.img_btn_pnl_south, text="Next", command=self.controller.next)
         self.nxt_img_btn.pack(side=MTk.LEFT)
 
         ##
         self.separator3 = MTk.Frame(self.tools_pnl, height=2, bd=1, relief=MTk.SUNKEN)
         self.separator3.pack(fill=MTk.X, padx=5, pady=5)
 
-        self.generate_btn = MTk.Button(self.tools_pnl, text="Generate file", command=self._execute)
+        self.generate_btn = MTk.Button(self.tools_pnl, text='Generate file', command=self._execute)
         self.generate_btn.pack(anchor=MTk.N)
 
     def _bind_key(self):
@@ -178,11 +192,11 @@ class Presentation():
         self.icomment_fld.bind("<Return>", lambda e: "break")
 
     def _quit(self, event=MTk.NONE):
-        print("--QUIT--")
+        print('--QUIT--')
         self.main.destroy()
 
     def _browse(self, event=MTk.NONE):
-        self.path = Fd.askdirectory(title="Select a directory")
+        self.path = Fd.askdirectory(title='Select a directory')
 
         # set the new path
         self.controller.clear()
@@ -193,10 +207,20 @@ class Presentation():
 
     def _execute(self):
         self.controller.execute()
-        Mb.showinfo("", "Treatment completed")
+        Mb.showinfo('', 'Treatment completed')
+
+    def _copy(self):
+        self.controller.copy({ 'title': self.get_image_title(), 'description': self.get_image_comment() })
+
+    def _paste(self):
+        image_info = self.controller.paste()
+        self.ititle_fld.delete(0, MTk.END)
+        self.ititle_fld.insert(0, image_info['title'])
+        self.icomment_fld.delete(0.0, MTk.END)
+        self.icomment_fld.insert(0.0, image_info['description'])
 
     def update(self, subject):
-        self.logger.debug("Update the presentation")
+        self.logger.debug('Update the presentation')
 
         # update path's textfield
         self.path_txt_line.delete(0, MTk.END)
@@ -211,15 +235,15 @@ class Presentation():
 
         # update images's textfields and label
         image_info = subject.get_image_info()
-        self.logger.debug((image_info.to_s()))
-        self.img_lbl.configure(text=image_info.get_left())
+        self.logger.debug(image_info)
+        self.img_lbl.configure(text=image_info['filename'])
         self.ititle_fld.delete(0, MTk.END)
-        self.ititle_fld.insert(0, image_info.get_midle())
+        self.ititle_fld.insert(0, image_info['title'])
         self.icomment_fld.delete(0.0, MTk.END)
-        self.icomment_fld.insert(0.0, image_info.get_right())
+        self.icomment_fld.insert(0.0, image_info['description'])
 
         # update canvas
-        self.ifile = Image.open(os.path.join(self.path, image_info.get_left()))
+        self.ifile = Image.open(os.path.join(self.path, image_info['filename']))
         self.picture = ImageTk.PhotoImage(self.ifile)
         scale_w = 80
         scale_h = 80
@@ -242,7 +266,7 @@ class Controller():
         self.logger.addHandler(file_handler)
         self.logger.addHandler(steam_handler)
 
-        self.logger.info("New MGN instance")
+        self.logger.info('New MGN instance')
         self.logger.info("Time between each backup: {0}s".format(DEFAULT_TIME_TO_BACKUP))
 
         self.abstraction = Abstraction()
@@ -250,13 +274,13 @@ class Controller():
         self.abstraction.attach(self.presentation)
 
     def previous(self):
-        self.logger.debug("Event: previous")
-        self._checkIsValidate()
+        self.logger.debug('Event: previous')
+        self._check_is_validate()
         self.abstraction.set_image_info(self.presentation.get_image_title(), self.presentation.get_image_comment())
         self.abstraction.previous()
 
     def next(self):
-        self.logger.debug("Event: next")
+        self.logger.debug('Event: next')
         self._check_is_validate()
         self.abstraction.set_image_info(self.presentation.get_image_title(), self.presentation.get_image_comment())
         self.abstraction.next()
@@ -272,14 +296,21 @@ class Controller():
         self.abstraction.set_gallery_info(gtitle, gcomment)
         self.set_validate(True)
 
+    def copy(self, image_info):
+        self.abstraction.set_buffer(image_info)
+
+    def paste(self):
+        return self.abstraction.get_buffer()
+
     def execute(self):
-        self.logger.debug("File generation")
+        self.logger.debug('File generation')
+        self.abstraction.set_image_info(self.presentation.get_image_title(), self.presentation.get_image_comment())
         self.abstraction.execute()
 
     def _check_is_validate(self):
         validate = self.abstraction.is_validate()
         if ~validate:
-            print("not validate")
+            print('not validate')
 
 class Abstraction():
 
@@ -291,11 +322,17 @@ class Abstraction():
         self.logger.addHandler(file_handler)
         self.logger.addHandler(steam_handler)
 
+        self.options = self._parse_options()
         self.observers = []
-        self.path = ""
-        self.gtitle = ""
-        self.gcomment = ""
-        self.images = []
+        self.path = ''
+        self.metadata = {
+            'title': '',
+            'description': '',
+            'images': []
+        }
+
+        self.buffer = { 'title': '', 'description': '' }
+
         self.index = 0
         self.backup_number = 1
 
@@ -303,24 +340,34 @@ class Abstraction():
 
         self._timed_backup()
 
+    def _parse_options(self):
+        opts = configparser.ConfigParser()
+        opts.read('config.ini')
+        return opts
+
+    def get_options(self):
+        return self.options
+
     def attach(self, observer):
-        self.logger.debug("Attach observer")
+        self.logger.debug('Attach observer')
         self.observers.append(observer)
 
     def detach(self, observer):
-        self.logger.debug("Detach observer")
+        self.logger.debug('Detach observer')
         self.observers.remove(observer)
 
     def update_observers(self):
-        self.logger.debug("Update observer")
+        self.logger.debug('Update observer')
         for observer in self.observers:
             observer.update(self)
 
     def clear(self):
-        self.path = ""
-        self.gtitle = ""
-        self.gcomment = ""
-        self.images = []
+        self.path = ''
+        self.metadata = {
+            'title': '',
+            'description': '',
+            'images': []
+        }
         self.index = 0
 
     ##
@@ -334,7 +381,7 @@ class Abstraction():
         else:
             self._prepare_new_metadata_file()
 
-        self.images.sort(key=lambda image_name: image_name.get_left())
+        self.metadata['images'].sort(key=lambda image_name: image_name['filename'])
 
         self.update_observers()
 
@@ -356,32 +403,41 @@ class Abstraction():
     # Internal usage
     #
     def _add_image(self, file):
-        image = Triple()
-        image.set_left(file).set_midle("Empty").set_right("Empty")
-        self.images.append(image)
+        self.metadata['images'].append({ 'filename': file, 'title': '', 'description': '' })
 
     ##
     # Internal usage
     #
     def _retrieve_metadata_from_file(self):
+        # FIXME: json then txt then nothing
+        if os.path.isfile(os.path.join(self.path, 'metadata.json')):
+            self._retrieve_metadata_from_file_json()
+        elif os.path.isfile(os.path.join(self.path, 'metadata.txt')):
+            self._retrieve_metadata_from_file_txt()
+        else:
+            self.logger.info('No metadata file.')
+
+    def _retrieve_metadata_from_file_json(self):
+        with open(os.path.join(self.path, 'metadata.json'), encoding=self.options['abstraction']['encoding']) as metadata_file:
+            self.metadata = json.load(metadata_file)
+
+    def _retrieve_metadata_from_file_txt(self):
         try:
-            metadata_file = open(os.path.join(self.path, 'metadata.txt'), encoding='ISO-8859-1')
+            metadata_file = open(os.path.join(self.path, 'metadata.txt'), encoding=self.options['abstraction']['encoding'])
 
             # parsing metadata.txt
             for line in metadata_file:
                 # gallery metadata
-                if line.startswith("title|"):
+                if line.startswith('title|'):
                     match = re.search(r"title\|(.*)\@(.*)", line)
                     if match:
-                        self.gtitle = match.group(1)
-                        self.gcomment = match.group(2)
+                        self.metadata['title'] = match.group(1)
+                        self.metadata['description'] = match.group(2)
                 else:
                     # image metadada
                     match = re.search(r"(.*)\|(.*)::(.*)", line)
                     if match:
-                        image = Triple()
-                        image.set_left(match.group(1)).set_midle(match.group(2)).set_right(match.group(3))
-                        self.images.append(image)
+                        self.metadata['images'].append({ 'filename': match.group(1), 'title': match.group(2), 'description': match.group(3) })
 
         except IOError as e:
             self.logger.error("I/O error({0}): {1}".format(e.errno, e.strerror))
@@ -394,7 +450,7 @@ class Abstraction():
     # Add or remove image from metadata.txt depending the images contains in directory
     #
     def _update_images_list(self):
-        self.logger.debug("Check image files and update metadata.txt")
+        self.logger.debug('Check image files and update metadata.txt')
         images_contains_in_directory = []
         os.chdir(self.path)
         for file in glob.glob("*.jpg"):
@@ -404,9 +460,9 @@ class Abstraction():
 
         # FIXME: find an efficient way to check the files
 
-        self.logger.debug("First pass")
-        for imagem in self.images:
-            imageml = imagem.get_left()
+        self.logger.debug('First pass')
+        for imagem in self.metadata['images']:
+            imageml = imagem['filename']
             tmp_images.append(imageml)
 
             if (imageml in images_contains_in_directory):
@@ -415,7 +471,7 @@ class Abstraction():
                 self.logger.debug("{0}: remove the photo from metadata.txt".format(imageml))
                 self.images.remove(imagem)
 
-        self.logger.debug("Second pass")
+        self.logger.debug('Second pass')
         for imaged in images_contains_in_directory:
             if (imaged in tmp_images):
                 self.logger.debug("{0}: nothing to do".format(imaged))
@@ -427,49 +483,65 @@ class Abstraction():
         return self.path
 
     def set_gallery_info(self, gtitle, gcomment):
-        self.gtitle = gtitle
-        self.gcomment = gcomment
-        self.logger.info("Gallery\'s name: [{0}] - Gallery's comment: [{1}]".format(self.gtitle, self.gcomment))
+        self.metadata['title'] = gtitle
+        self.metadata['description'] = gcomment
+        self.logger.info("Gallery\'s name: [{0}] - Gallery's comment: [{1}]".format(gtitle, gcomment))
 
     def get_gallery_title(self):
-        return self.gtitle
+        return self.metadata['title']
 
     def get_gallery_comment(self):
-        return self.gcomment
+        return self.metadata['description']
 
     def set_image_info(self, ititle, icomment):
-        self.images[self.index].set_midle(ititle).set_right(icomment)
+        image = self.metadata['images'][self.index]
+        image['title'] = ititle
+        image['description'] = icomment
 
     def get_image_info(self):
-        return self.images[self.index]
+        return self.metadata['images'][self.index]
 
     def next(self):
-        if (self.index < len(self.images)-1):
+        if (self.index < len(self.metadata['images'])-1):
             self.index += 1
             self.update_observers()
         else:
-            Mb.showinfo("", "All images reads")
+            Mb.showinfo('', 'All images reads')
 
     def previous(self):
         if (self.index > 0):
             self.index -= 1
             self.update_observers()
         else:
-            Mb.showinfo("", "This is already the first image")
+            Mb.showinfo('', 'This is already the first image')
 
-    def execute(self, file='metadata.txt'):
+    def execute(self, file=''):
+        method = 'execute_' + self.options['abstraction']['output_format']
+        if not file:
+            getattr(self, method)()
+        else:
+            getattr(self, method)(file)
+
+    def execute_json(self, file='metadata.json'):
+        print(json.dumps(self.metadata, indent=2, ensure_ascii=False))
+        self._write(file, json.dumps(self.metadata, indent=2, ensure_ascii=False))
+
+    def execute_txt(self, file='metadata.txt'):
         sb = StringBuilder()
-        sb.append("title|").append(self.gtitle).append("@").append(self.gcomment).append("\n")
+        sb.append('title|').append(self.metadata['title']).append('@').append(self.metadata['description']).append("\n")
 
         os.chdir(self.path)
-        for image in self.images:
-            sb.append(image.get_left().__str__()).append("|").append(image.get_midle().__str__()).append("::")
-            sb.append(image.get_right().__str__()).append("\n")
+        for image in self.metadata['images']:
+            sb.append(image['filename'].__str__()).append('|').append(image['title'].__str__()).append('::')
+            sb.append(image['description'].__str__()).append("\n")
 
         print(sb.to_s())
+        self._write(file, sb.to_s())
+
+    def _write(self, file, data):
         try:
-            output_file = codecs.open(os.path.join(self.path, file), 'w', 'ISO-8859-1')
-            output_file.write(sb.to_s())
+            output_file = codecs.open(os.path.join(self.path, file), 'w', self.options['abstraction']['encoding'])
+            output_file.write(data)
         except IOError as e:
             self.logger.error("I/O error({0}): {1}".format(e.errno, e.strerror))
         finally:
@@ -483,7 +555,7 @@ class Abstraction():
         timer = Timer(DEFAULT_TIME_TO_BACKUP, self._timed_backup)
         timer.setDaemon(True)
         timer.start()
-        if (self.gtitle != ""):
+        if (self.metadata['title'] != ""):
             backup = 'backup_'+self.backup_number.__str__()+'.txt'
             self.logger.info('Perform backup: '+backup)
             self.execute(backup)
@@ -494,6 +566,14 @@ class Abstraction():
 
     def set_validate(self, boolean):
         self.validate = boolean
+
+    def set_buffer(self, image_info):
+        self.logger.info('Define buffer: '+image_info.__str__())
+        self.buffer = image_info
+
+    def get_buffer(self):
+        self.logger.info('Buffer:'+self.buffer.__str__())
+        return self.buffer
 
 ###########################
 # Launch the main frame
