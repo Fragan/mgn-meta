@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python2
 
 import sys
 print((sys.version))
@@ -154,17 +154,24 @@ class Presentation():
         self.img_btn_pnl = MTk.Frame(self.img_info_pnl)
         self.img_btn_pnl.pack(anchor=MTk.E)
 
-        self.nxt_img_btn = MTk.Button(self.img_btn_pnl, text='Previous', command=self.controller.previous)
-        self.nxt_img_btn.pack(side=MTk.LEFT)
+        self.img_btn_pnl_north = MTk.Frame(self.img_btn_pnl)
+        self.img_btn_pnl_north.pack(anchor=MTk.E)
 
-        self.nxt_img_btn = MTk.Button(self.img_btn_pnl, text="Next", command=self.controller.next)
-        self.nxt_img_btn.pack(side=MTk.LEFT)
-
-        self.copy_img_btn = MTk.Button(self.img_btn_pnl, text='Copy', command=self._copy)
+        self.copy_img_btn = MTk.Button(self.img_btn_pnl_north, text='Copy', command=self._copy)
         self.copy_img_btn.pack(side=MTk.LEFT)
 
-        self.paste_img_btn = MTk.Button(self.img_btn_pnl, text='Paste', command=self._paste)
+        self.paste_img_btn = MTk.Button(self.img_btn_pnl_north, text='Paste', command=self._paste)
         self.paste_img_btn.pack(side=MTk.LEFT)
+
+        #
+        self.img_btn_pnl_south = MTk.Frame(self.img_btn_pnl)
+        self.img_btn_pnl_south.pack(anchor=MTk.E)
+
+        self.nxt_img_btn = MTk.Button(self.img_btn_pnl_south, text='Previous', command=self.controller.previous)
+        self.nxt_img_btn.pack(side=MTk.LEFT)
+
+        self.nxt_img_btn = MTk.Button(self.img_btn_pnl_south, text="Next", command=self.controller.next)
+        self.nxt_img_btn.pack(side=MTk.LEFT)
 
         ##
         self.separator3 = MTk.Frame(self.tools_pnl, height=2, bd=1, relief=MTk.SUNKEN)
@@ -403,7 +410,12 @@ class Abstraction():
     #
     def _retrieve_metadata_from_file(self):
         # FIXME: json then txt then nothing
-        self._retrieve_metadata_from_file_json()
+        if os.path.isfile(os.path.join(self.path, 'metadata.json')):
+            self._retrieve_metadata_from_file_json()
+        elif os.path.isfile(os.path.join(self.path, 'metadata.txt')):
+            self._retrieve_metadata_from_file_txt()
+        else:
+            self.logger.info('No metadata file.')
 
     def _retrieve_metadata_from_file_json(self):
         with open(os.path.join(self.path, 'metadata.json'), encoding=self.options['abstraction']['encoding']) as metadata_file:
