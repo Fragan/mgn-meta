@@ -108,6 +108,7 @@ class Presentation():
         self.sbar_h.pack(side=MTk.BOTTOM, fill=MTk.X)
 
         self.canvas.pack(side=MTk.LEFT, expand=MTk.YES, fill=MTk.BOTH)
+        self.canvas.bind("<Configure>", self._resize)
 
         self.ifile = Image.open('index.jpeg')
         self.picture = ImageTk.PhotoImage(self.ifile)
@@ -244,10 +245,12 @@ class Presentation():
 
         # update canvas
         self.ifile = Image.open(os.path.join(self.path, image_info['filename']))
-        self.picture = ImageTk.PhotoImage(self.ifile)
-        scale_w = 80
-        scale_h = 80
-        #self.picture.zoom(scale_w, scale_h)
+        self._resize(None)
+
+    def _resize(self, event):
+        size = (self.canvas.winfo_width(), self.canvas.winfo_height())
+        resized = self.ifile.resize(size, Image.ANTIALIAS)
+        self.picture = ImageTk.PhotoImage(resized)
         self.canvas.itemconfig(self.image_on_canvas, image=self.picture)
 
     def get_image_title(self):
