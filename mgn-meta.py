@@ -248,9 +248,23 @@ class Presentation():
         self._resize(None)
 
     def _resize(self, event):
-        size = (self.canvas.winfo_width(), self.canvas.winfo_height())
+        wc = self.canvas.winfo_width()
+        hc = self.canvas.winfo_height()
+        rc = wc / hc
+        wi, hi = self.ifile.size
+        ri = wi / hi
+
+        # Resize with keeping image ratio
+        if (rc > ri):
+            size = (int(wi * hc / hi), hc)
+        else:
+            size = (wc, int(hi * wc / wi))
+
         resized = self.ifile.resize(size, Image.ANTIALIAS)
         self.picture = ImageTk.PhotoImage(resized)
+
+        #top = (hc - size[1])/2
+        #left = (wc - size[0])/2
         self.canvas.itemconfig(self.image_on_canvas, image=self.picture)
 
     def get_image_title(self):
