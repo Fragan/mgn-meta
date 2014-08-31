@@ -406,7 +406,7 @@ class Abstraction():
     # Internal usage
     #
     def _check_metadata_file(self):
-        return os.path.exists(os.path.join(self.path, 'metadata.txt'))
+        return os.path.exists(os.path.join(self.path, 'metadata.json')) or os.path.exists(os.path.join(self.path, 'metadata.txt'))
 
     ##
     # Internal usage
